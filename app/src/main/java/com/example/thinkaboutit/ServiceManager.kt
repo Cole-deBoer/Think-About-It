@@ -3,20 +3,14 @@ package com.example.thinkaboutit
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.drawable.BitmapDrawable
 import android.util.Log
-import android.widget.ImageView
 import android.widget.Toast
-import androidx.compose.ui.graphics.asImageBitmap
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.ktx.app
 import com.google.firebase.storage.ktx.storage
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.runBlocking
 import java.io.ByteArrayOutputStream
-import java.util.UUID
 
 // Singleton class that Manages all the firebase integration throughout the app
 class ServiceManager private constructor()
@@ -28,27 +22,25 @@ class ServiceManager private constructor()
     private val app = Firebase.app;
     val auth = Firebase.auth;
     val database = Firebase.database(app);
-    val storage = Firebase.storage("gs://thinkaboutit-f2133.firebasestorage.app")
+    val storage = Firebase.storage(app)
 
-    val databaseRef = database.reference;
-    val storageRef = storage.reference;
+    private val databaseRef = database.reference;
+    private val storageRef = storage.reference;
 
     val usersRef = databaseRef.child("users");
     val promptsRef = databaseRef.child("prompts");
 
-    // When using this method make sure you check that the returned image is not null
-    // Also ensure that the passed UUID is valid and corresponds to a user in the session
-    fun getUserImage(id: String) : Bitmap?
+    // method takes a callback
+    fun getUserImage(id: String, callback: (Bitmap?) -> Unit)
     {
-        var bitmap : Bitmap? = null;
-
         Log.d("IMAGE ID", id)
         val imagePath = storageRef.child("${id}.png")
         val oneMegabyte: Long = 1024 * 1024
         imagePath.getBytes(oneMegabyte).addOnSuccessListener {bytes ->
             if(bytes != null)
             {
-                bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                // pass the bitmap to the callback
+                callback(BitmapFactory.decodeByteArray(bytes, 0, bytes.size))
             }
             else
             {
@@ -56,8 +48,8 @@ class ServiceManager private constructor()
             }
         }.addOnFailureListener {
             Log.e("RETRIEVING IMAGE ERROR", "Couldn't retrieve image from firebase")
+            callback(null)
         }
-        return bitmap;
     }
 
     fun sendUserImage(image: Bitmap, context: Context?) {

@@ -24,14 +24,12 @@ class LeaderboardActivity : AppCompatActivity() {
         // Get the voted image resource ID from intent
         ServiceManager.Instance.auth.currentUser?.let { user ->
 
-            val votedImageResource = ServiceManager.Instance.getUserImage(user.uid)
-
-
-            // Set up winning drawing
-            val winningDrawing = findViewById<ImageView>(R.id.winning_drawing)
-            votedImageResource?.let {image ->
+            ServiceManager.Instance.getUserImage(user.uid) { image ->
+                // Set up winning drawing
+                val winningDrawing = findViewById<ImageView>(R.id.winning_drawing)
                 winningDrawing.setImageBitmap(image)
             }
+
 
             // Set up play again button
             val playAgainButton = findViewById<Button>(R.id.play_again_button)
