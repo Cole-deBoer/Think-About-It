@@ -121,6 +121,7 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
 
             val storageDir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
             val imageFile = File(storageDir, fileName)
+            ServiceManager.Instance.sendUserImage(canvasBitmap, context)
 
             val fos = FileOutputStream(imageFile)
             canvasBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)

@@ -1,9 +1,11 @@
 package com.example.thinkaboutit
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
 class VotingActivity : AppCompatActivity() {
@@ -58,7 +60,9 @@ class VotingActivity : AppCompatActivity() {
     }
 
     // Disable back button
+    @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
         // Do nothing
+        Toast.makeText(this, "You can't go back!", Toast.LENGTH_SHORT).show()
     }
 }

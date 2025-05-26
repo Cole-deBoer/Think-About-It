@@ -1,12 +1,13 @@
 package com.example.thinkaboutit
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.SeekBar
-import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
 class DrawingActivity : AppCompatActivity() {
@@ -99,7 +100,9 @@ class DrawingActivity : AppCompatActivity() {
     }
 
     // Disable back button
+    @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
         // Do nothing
+        Toast.makeText(this, "You can't go back!", Toast.LENGTH_SHORT).show()
     }
 }

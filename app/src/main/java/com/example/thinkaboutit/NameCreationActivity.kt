@@ -1,13 +1,15 @@
 package com.example.thinkaboutit
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import java.util.UUID
 
-class MainActivity : AppCompatActivity() {
+class NameCreationActivity : AppCompatActivity() {
 
     private lateinit var nameEditText: EditText
     private lateinit var letsGoButton: Button
@@ -36,11 +38,15 @@ class MainActivity : AppCompatActivity() {
                 intent.putExtra("USER_NAME", name)
                 startActivity(intent)
             }
+            ServiceManager.Instance.auth.signInAnonymously()
+            ServiceManager.Instance.usersRef.child("${ServiceManager.Instance.auth.currentUser?.uid}").child("name").setValue(name)
         }
     }
 
     // Disable back button
+    @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
         // Do nothing
+        Toast.makeText(this, "You can't go back!", Toast.LENGTH_SHORT).show()
     }
 }

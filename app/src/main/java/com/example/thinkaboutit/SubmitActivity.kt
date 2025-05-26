@@ -1,5 +1,6 @@
 package com.example.thinkaboutit
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -64,7 +65,9 @@ class SubmitActivity : AppCompatActivity() {
     }
 
     // Disable back button
+    @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
         // Do nothing
+        Toast.makeText(this, "You can't go back!", Toast.LENGTH_SHORT).show()
     }
 }
