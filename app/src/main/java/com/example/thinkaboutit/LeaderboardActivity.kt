@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.toPixelMap
 import kotlinx.coroutines.runBlocking
 import java.util.UUID
 
-class LeaderboardActivity : AppCompatActivity() {
+class LeaderboardActivity : AppCompatActivity(), State {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,5 +45,13 @@ class LeaderboardActivity : AppCompatActivity() {
     override fun onBackPressed() {
         // Do nothing
         Toast.makeText(this, "You can't go back!", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun enter(callback: () -> Unit) {
+        TODO("Not yet implemented")
+    }
+
+    override fun exit(newState: State) {
+        TODO("Not yet implemented")
     }
 }

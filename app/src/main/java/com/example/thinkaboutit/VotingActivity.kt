@@ -8,7 +8,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
-class VotingActivity : AppCompatActivity() {
+class VotingActivity : AppCompatActivity(), State {
     private lateinit var drawingImage1: ImageView
     private lateinit var drawingImage2: ImageView
     private lateinit var drawingImage3: ImageView
@@ -64,5 +64,13 @@ class VotingActivity : AppCompatActivity() {
     override fun onBackPressed() {
         // Do nothing
         Toast.makeText(this, "You can't go back!", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun enter(callback: () -> Unit) {
+        TODO("Not yet implemented")
+    }
+
+    override fun exit(newState: State) {
+        TODO("Not yet implemented")
     }
 }

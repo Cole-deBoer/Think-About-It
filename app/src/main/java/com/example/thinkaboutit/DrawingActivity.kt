@@ -10,7 +10,7 @@ import android.widget.SeekBar
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
-class DrawingActivity : AppCompatActivity() {
+class DrawingActivity : AppCompatActivity(), State {
 
     private lateinit var drawingView: DrawingView
     private lateinit var currPaint: ImageButton
@@ -104,5 +104,13 @@ class DrawingActivity : AppCompatActivity() {
     override fun onBackPressed() {
         // Do nothing
         Toast.makeText(this, "You can't go back!", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun enter(callback: () -> Unit) {
+        TODO("Not yet implemented")
+    }
+
+    override fun exit(newState: State) {
+        TODO("Not yet implemented")
     }
 }

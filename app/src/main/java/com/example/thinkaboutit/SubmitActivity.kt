@@ -10,7 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
-class SubmitActivity : AppCompatActivity() {
+class SubmitActivity : AppCompatActivity(), State {
 
     private lateinit var drawingPreview: ImageView
     private lateinit var submitButton: Button
@@ -69,5 +69,13 @@ class SubmitActivity : AppCompatActivity() {
     override fun onBackPressed() {
         // Do nothing
         Toast.makeText(this, "You can't go back!", Toast.LENGTH_SHORT).show()
+    }
+
+    override fun enter(callback: () -> Unit) {
+        TODO("Not yet implemented")
+    }
+
+    override fun exit(newState: State) {
+        TODO("Not yet implemented")
     }
 }

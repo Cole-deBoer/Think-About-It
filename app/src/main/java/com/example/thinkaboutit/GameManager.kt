@@ -5,7 +5,10 @@ package com.example.thinkaboutit
 class GameManager()
 {
     companion object {
-        val Instance = GameManager;
+        val Instance by lazy { GameManager() };
     }
+
+    var currentState: State = NameCreationActivity()
+
 }
 

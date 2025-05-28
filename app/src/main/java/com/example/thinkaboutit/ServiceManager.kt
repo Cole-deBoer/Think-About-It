@@ -73,4 +73,29 @@ class ServiceManager private constructor()
             }
         }
     }
+
+    fun getGameState(callback: (State?) -> Unit)
+    {
+        databaseRef.child("GameState").get().addOnFailureListener {
+            Log.e("Connection Error", "Couldn't get the game state")
+        }.addOnSuccessListener { snapshot ->
+            snapshot.child("state").value
+            if(snapshot.child("state").value != null)
+            {
+                val stateName = snapshot.child("state").value.toString()
+                if(StateTable.states[stateName] != null)
+                {
+                    callback(StateTable.states[stateName])
+                }
+                else
+                {
+                    Log.e("State Error", "Couldn't find state $stateName in state table")
+                }
+            }
+            else
+            {
+                Log.e("State Error", "Couldn't find state object in snapshot")
+            }
+        }
+    }
 }
