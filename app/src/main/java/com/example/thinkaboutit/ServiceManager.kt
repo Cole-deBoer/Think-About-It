@@ -5,7 +5,14 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import com.google.android.gms.tasks.OnSuccessListener
+import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.ktx.app
@@ -27,8 +34,24 @@ class ServiceManager private constructor()
     private val databaseRef = database.reference;
     private val storageRef = storage.reference;
 
-    val usersRef = databaseRef.child("users");
-    val promptsRef = databaseRef.child("prompts");
+    private lateinit var episodeRef : DatabaseReference;
+
+    lateinit var usersRef: DatabaseReference;
+    lateinit var promptsRef: DatabaseReference;
+    lateinit var userReadynessTrackerListener: UserReadynessTracker;
+
+    fun initializeComponents(callback: () -> Unit) {
+        databaseRef.child("currentEpisode").get().addOnSuccessListener {episode ->
+            episodeRef = databaseRef.child("episode_${episode.value}");
+            usersRef = episodeRef.child("users");
+            promptsRef = episodeRef.child("Prompts");
+            userReadynessTrackerListener = UserReadynessTracker();
+            usersRef.addValueEventListener(userReadynessTrackerListener);
+            callback()
+        }.addOnFailureListener {
+            Log.e("Connection Error", "Couldn't get the current episode")
+        }
+    }
 
     // method takes a callback
     fun getUserImage(id: String, callback: (Bitmap?) -> Unit)
@@ -65,7 +88,7 @@ class ServiceManager private constructor()
                 {
                     Toast.makeText(context, "Image Upload Failed", Toast.LENGTH_SHORT).show()
                 }
-            }.addOnSuccessListener {snapshot ->
+            }.addOnSuccessListener {
                 if(context != null)
                 {
                     Toast.makeText(context, "Image Uploaded", Toast.LENGTH_SHORT).show()
@@ -74,28 +97,116 @@ class ServiceManager private constructor()
         }
     }
 
-    fun getGameState(callback: (State?) -> Unit)
+    fun getGameState(callback: (State) -> Unit)
     {
-        databaseRef.child("GameState").get().addOnFailureListener {
+        episodeRef.child("gameState").get().addOnFailureListener {
             Log.e("Connection Error", "Couldn't get the game state")
         }.addOnSuccessListener { snapshot ->
-            snapshot.child("state").value
-            if(snapshot.child("state").value != null)
-            {
-                val stateName = snapshot.child("state").value.toString()
-                if(StateTable.states[stateName] != null)
-                {
-                    callback(StateTable.states[stateName])
-                }
-                else
-                {
-                    Log.e("State Error", "Couldn't find state $stateName in state table")
-                }
-            }
-            else
+            if(snapshot.value.toString().isEmpty())
             {
                 Log.e("State Error", "Couldn't find state object in snapshot")
             }
+            else
+            {
+                snapshot.value.let { stateName ->
+                    val state = StateTable.states.get(key = stateName.toString());
+                    if(state != null)
+                    {
+                        callback(state)
+
+                    }
+                    else
+                    {
+                        Log.e("State Error", "Couldn't find state $stateName in state table. loading name creating activity instead")
+                        callback(NameCreationActivity())
+                    }
+                }
+            }
         }
+    }
+
+    fun setGameState(state: State) {
+        episodeRef.child("host").get().addOnFailureListener {
+            Log.e("Connection Error", "Couldn't get the host")
+        }.addOnSuccessListener { snapshot ->
+            if(auth.currentUser?.uid == snapshot.value.toString())
+            {
+                episodeRef.child("gameState").get().addOnFailureListener {
+                    Log.e("Connection Error", "Couldn't get the game state creating a new one")
+                    episodeRef.child("gameState").setValue(state.javaClass.simpleName)
+                }.addOnSuccessListener { snapshot ->
+                    snapshot.ref.setValue(state.javaClass.simpleName)
+                }
+            }
+        }
+    }
+
+    fun resetUserReadyness() {
+        usersRef.child(auth.currentUser?.uid.toString()).get().addOnFailureListener {
+            Log.e("Connection Error", "Couldn't get the user id")
+        }.addOnSuccessListener { snapshot ->
+            snapshot.ref.child("ready").setValue(false)
+        }
+    }
+
+    fun getUserCount (callback: (Int) -> Unit) {
+        usersRef.get().addOnSuccessListener { snapshot ->
+            callback(snapshot.childrenCount.toInt())
+        }
+    }
+
+    fun createNewUser(name: String, callback: () -> Unit): OnSuccessListener<in AuthResult> {
+        return OnSuccessListener {
+            episodeRef.child("host").get().addOnFailureListener {
+                Log.e("Connection Error", "Couldn't get the host")
+            }.addOnSuccessListener { snapshot ->
+                if(snapshot.value == null)
+                {
+                    snapshot.ref.setValue(auth.currentUser?.uid.toString())
+                }
+                usersRef.child(auth.currentUser?.uid.toString()).child("name").setValue(name)
+                usersRef.child(auth.currentUser?.uid.toString()).child("ready").setValue(true)
+                callback()
+            }
+        }
+    }
+}
+
+class UserReadynessTracker : ValueEventListener {
+
+    lateinit var snapshot : DataSnapshot
+
+    override fun onDataChange(snapshot: DataSnapshot) {
+        this.snapshot = snapshot
+        val activity = GameManager.Instance.CurrentState as AppCompatActivity
+        Toast.makeText(activity, "User Count: ${snapshot.childrenCount}", Toast.LENGTH_SHORT).show()
+        ServiceManager.Instance.getGameState { state ->
+
+            ServiceManager.Instance.getUserCount { count ->
+                if(count >= GameManager.Instance.AmountOfPlayers)
+                {
+                    if(ServiceManager.Instance.auth.currentUser?.uid == snapshot.child("host").value.toString())
+                    {
+                        if(ServiceManager.Instance.userReadynessTrackerListener.areReady())
+                        {
+                            Toast.makeText(activity, "All users are ready", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                    GameManager.Instance.CurrentState?.exit(state)
+                }
+            }
+        }
+    }
+
+    override fun onCancelled(error: DatabaseError) {
+        TODO("Not yet implemented")
+    }
+
+    fun areReady() : Boolean {
+        for(user in snapshot.children)
+        {
+            if(!user.child("ready").value.toString().toBoolean()) return false
+        }
+        return true
     }
 }

@@ -7,7 +7,6 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import java.util.UUID
 
 class NameCreationActivity : AppCompatActivity(), State {
 
@@ -17,6 +16,8 @@ class NameCreationActivity : AppCompatActivity(), State {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        enter()
 
         // Disable going back
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
@@ -32,14 +33,10 @@ class NameCreationActivity : AppCompatActivity(), State {
             if (name.isEmpty()) {
                 Toast.makeText(this, "Please enter your name", Toast.LENGTH_SHORT).show()
             } else {
-                // Start drawing activity with the entered name and clear the stack
-                val intent = Intent(this, DrawingActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                intent.putExtra("USER_NAME", name)
-                startActivity(intent)
+                ServiceManager.Instance.auth.signInAnonymously().addOnSuccessListener(ServiceManager.Instance.createNewUser(name) {
+                    ServiceManager.Instance.setGameState(DrawingActivity())
+                })
             }
-            ServiceManager.Instance.auth.signInAnonymously()
-            ServiceManager.Instance.usersRef.child("${ServiceManager.Instance.auth.currentUser?.uid}").child("name").setValue(name)
         }
     }
 
@@ -50,11 +47,14 @@ class NameCreationActivity : AppCompatActivity(), State {
         Toast.makeText(this, "You can't go back!", Toast.LENGTH_SHORT).show()
     }
 
-    override fun enter(callback: () -> Unit) {
-        TODO("Not yet implemented")
+    override fun enter() {
+        ServiceManager.Instance.initializeComponents {
+            GameManager.Instance.CurrentState = this
+        }
     }
 
-    override fun exit(newState: State) {
-        TODO("Not yet implemented")
+    override fun exit(state: State) {
+        startActivity(Intent(this, state::class.java));
+        ServiceManager.Instance.resetUserReadyness()
     }
 }

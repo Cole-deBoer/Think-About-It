@@ -71,11 +71,11 @@ class SubmitActivity : AppCompatActivity(), State {
         Toast.makeText(this, "You can't go back!", Toast.LENGTH_SHORT).show()
     }
 
-    override fun enter(callback: () -> Unit) {
+    override fun enter() {
         TODO("Not yet implemented")
     }
 
-    override fun exit(newState: State) {
+    override fun exit(state: State) {
         TODO("Not yet implemented")
     }
 }

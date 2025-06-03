@@ -8,7 +8,7 @@ class GameManager()
         val Instance by lazy { GameManager() };
     }
 
-    var currentState: State = NameCreationActivity()
-
+    val AmountOfPlayers: Int = 2
+    var CurrentState: State? = null;
 }
 

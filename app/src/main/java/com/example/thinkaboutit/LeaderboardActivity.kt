@@ -2,15 +2,11 @@ package com.example.thinkaboutit
 
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.Bitmap
 import android.os.Bundle
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.ui.graphics.toPixelMap
-import kotlinx.coroutines.runBlocking
-import java.util.UUID
 
 class LeaderboardActivity : AppCompatActivity(), State {
 
@@ -47,11 +43,11 @@ class LeaderboardActivity : AppCompatActivity(), State {
         Toast.makeText(this, "You can't go back!", Toast.LENGTH_SHORT).show()
     }
 
-    override fun enter(callback: () -> Unit) {
+    override fun enter() {
         TODO("Not yet implemented")
     }
 
-    override fun exit(newState: State) {
+    override fun exit(state: State) {
         TODO("Not yet implemented")
     }
 }

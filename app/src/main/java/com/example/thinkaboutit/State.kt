@@ -1,16 +1,16 @@
 package com.example.thinkaboutit
 
 interface State {
-    fun enter(callback: () -> Unit)
-    fun exit(newState: State)
+    fun enter()
+    fun exit(state: State)
 }
 
 data object StateTable {
     val states : Map<String, State> = mapOf(
-        "nameCreation" to NameCreationActivity(),
-        "drawing" to DrawingActivity(),
-        "leaderboard" to LeaderboardActivity(),
-        "submit" to SubmitActivity(),
-        "voting" to VotingActivity()
+        "NameCreationActivity" to NameCreationActivity(),
+        "DrawingActivity" to DrawingActivity(),
+        "LeaderboardActivity" to LeaderboardActivity(),
+        "SubmitActivity" to SubmitActivity(),
+        "VotingActivity" to VotingActivity()
     );
 }
