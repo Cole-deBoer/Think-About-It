@@ -14,10 +14,11 @@ class LeaderboardActivity : AppCompatActivity(), State {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_leaderboard)
 
+        enter();
+
         // Disable going back
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
 
-        // Get the voted image resource ID from intent
         ServiceManager.Instance.auth.currentUser?.let { user ->
 
             ServiceManager.Instance.getUserImage(user.uid) { image ->
@@ -30,9 +31,7 @@ class LeaderboardActivity : AppCompatActivity(), State {
             // Set up play again button
             val playAgainButton = findViewById<Button>(R.id.play_again_button)
             playAgainButton.setOnClickListener {
-                val intent = Intent(this, DrawingActivity::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                startActivity(intent)
+                ServiceManager.Instance.setUserReadyness(true)
             }
         }
     }
@@ -44,10 +43,32 @@ class LeaderboardActivity : AppCompatActivity(), State {
     }
 
     override fun enter() {
-        TODO("Not yet implemented")
+        GameManager.Instance.currentState = this
+        GameManager.Instance.queuedState = DrawingActivity()
+
+        ServiceManager.Instance.usersRef.get().addOnSuccessListener {snapshot ->
+            var winnersId = ""
+            var highestVotes = 0;
+            for(user in snapshot.children)
+            {
+                if(user.child("votes").value == null) continue
+                if(user.child("votes").value.toString().toInt() > highestVotes)
+                {
+                    highestVotes = user.child("votes").value.toString().toInt()
+                    winnersId = user.key.toString()
+                }
+            }
+
+            ServiceManager.Instance.getUserImage(winnersId) {image ->
+                // Set up winning drawing
+                val winningDrawing = findViewById<ImageView>(R.id.winning_drawing)
+                winningDrawing.setImageBitmap(image)
+            }
+        }
     }
 
     override fun exit(state: State) {
-        TODO("Not yet implemented")
+        startActivity(Intent(this, state::class.java));
+        ServiceManager.Instance.setUserReadyness(false)
     }
 }

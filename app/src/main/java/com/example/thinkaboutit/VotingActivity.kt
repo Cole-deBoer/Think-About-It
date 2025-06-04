@@ -3,60 +3,35 @@ package com.example.thinkaboutit
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.database.values
+import kotlinx.coroutines.flow.first
 
 class VotingActivity : AppCompatActivity(), State {
-    private lateinit var drawingImage1: ImageView
-    private lateinit var drawingImage2: ImageView
-    private lateinit var drawingImage3: ImageView
-    private lateinit var voteButton1: Button
-    private lateinit var voteButton2: Button
-    private lateinit var voteButton3: Button
+
+    lateinit var user1 : VoteCard;
+    lateinit var user2 : VoteCard;
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_voting)
 
+        enter()
+
         // Disable going back
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
+    }
 
-        // Initialize views
-        drawingImage1 = findViewById(R.id.drawingImage1)
-        drawingImage2 = findViewById(R.id.drawingImage2)
-        drawingImage3 = findViewById(R.id.drawingImage3)
-        voteButton1 = findViewById(R.id.voteButton1)
-        voteButton2 = findViewById(R.id.voteButton2)
-        voteButton3 = findViewById(R.id.voteButton3)
+    private fun vote(uid: String): View.OnClickListener {
+        return View.OnClickListener {
 
-        // Set up click listeners to navigate to leaderboard with the voted image
-        voteButton1.setOnClickListener {
-            val intent = Intent(this, LeaderboardActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            intent.putExtra("VOTED_IMAGE_RESOURCE", R.drawable.sample_drawing1)
-            startActivity(intent)
+            ServiceManager.Instance.usersRef.child(uid).child("votes").setValue(1)
+            ServiceManager.Instance.setUserReadyness(true);
         }
-
-        voteButton2.setOnClickListener {
-            val intent = Intent(this, LeaderboardActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            intent.putExtra("VOTED_IMAGE_RESOURCE", R.drawable.sample_drawing2)
-            startActivity(intent)
-        }
-
-        voteButton3.setOnClickListener {
-            val intent = Intent(this, LeaderboardActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            intent.putExtra("VOTED_IMAGE_RESOURCE", R.drawable.sample_drawing3)
-            startActivity(intent)
-        }
-
-        // Set up sample drawings
-        drawingImage1.setImageResource(R.drawable.sample_drawing1)
-        drawingImage2.setImageResource(R.drawable.sample_drawing2)
-        drawingImage3.setImageResource(R.drawable.sample_drawing3)
     }
 
     // Disable back button
@@ -69,6 +44,27 @@ class VotingActivity : AppCompatActivity(), State {
     override fun enter() {
         GameManager.Instance.currentState = this
         GameManager.Instance.queuedState = LeaderboardActivity()
+
+        // if we are the host set the images to be the submitted drawings
+
+        ServiceManager.Instance.hostRef.get().addOnSuccessListener {snapshot ->
+            //if(snapshot.value != ServiceManager.Instance.auth.currentUser?.uid) return@addOnSuccessListener
+
+            ServiceManager.Instance.usersRef.get().addOnSuccessListener { usersSnapshot ->
+                user1 = VoteCard(findViewById(R.id.drawingImage1), findViewById(R.id.voteButton1), usersSnapshot.children.first().key.toString())
+                user2 = VoteCard(findViewById(R.id.drawingImage2), findViewById(R.id.voteButton2), usersSnapshot.children.elementAt(1).key.toString())
+
+                ServiceManager.Instance.getUserImage(user1.userId) { bitmap ->
+                    user1.drawing.setImageBitmap(bitmap)
+                }
+                ServiceManager.Instance.getUserImage(user2.userId) { bitmap ->
+                    user2.drawing.setImageBitmap(bitmap)
+                }
+
+                user1.voteButton.setOnClickListener(vote(user1.userId))
+                user2.voteButton.setOnClickListener(vote(user2.userId))
+            }
+        }
     }
 
     override fun exit(state: State) {
@@ -76,3 +72,9 @@ class VotingActivity : AppCompatActivity(), State {
         ServiceManager.Instance.setUserReadyness(false)
     }
 }
+
+data class VoteCard(
+    val drawing: ImageView,
+    val voteButton: Button,
+    val userId: String
+)

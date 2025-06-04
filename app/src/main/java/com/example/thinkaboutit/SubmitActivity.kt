@@ -49,11 +49,12 @@ class SubmitActivity : AppCompatActivity(), State {
         // Set up submit button
         submitButton.setOnClickListener {
 
-            ServiceManager.Instance.setUserReadyness(true);
+            ServiceManager.Instance.setUserReadyness(true)
         }
 
         // Set up cancel button
         cancelButton.setOnClickListener {
+            ServiceManager.Instance.setUserReadyness(false)
             finish()
         }
     }
