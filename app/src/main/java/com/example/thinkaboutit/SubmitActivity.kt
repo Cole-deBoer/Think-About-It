@@ -23,6 +23,8 @@ class SubmitActivity : AppCompatActivity(), State {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_submit)
 
+        enter();
+
         // Disable going back
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
 
@@ -46,16 +48,8 @@ class SubmitActivity : AppCompatActivity(), State {
 
         // Set up submit button
         submitButton.setOnClickListener {
-            // Here you would implement the actual submission logic
-            // For example, uploading the image to a server
 
-            Toast.makeText(this, "Drawing submitted successfully!", Toast.LENGTH_SHORT).show()
-            
-            // Navigate to VotingActivity
-            val intent = Intent(this, VotingActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            finish()
+            ServiceManager.Instance.setUserReadyness(true);
         }
 
         // Set up cancel button
@@ -72,10 +66,12 @@ class SubmitActivity : AppCompatActivity(), State {
     }
 
     override fun enter() {
-        TODO("Not yet implemented")
+        GameManager.Instance.currentState = this
+        GameManager.Instance.queuedState = VotingActivity()
     }
 
     override fun exit(state: State) {
-        TODO("Not yet implemented")
+        startActivity(Intent(this, state::class.java));
+        ServiceManager.Instance.setUserReadyness(false)
     }
 }

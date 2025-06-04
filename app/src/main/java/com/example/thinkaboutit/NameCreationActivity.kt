@@ -33,9 +33,7 @@ class NameCreationActivity : AppCompatActivity(), State {
             if (name.isEmpty()) {
                 Toast.makeText(this, "Please enter your name", Toast.LENGTH_SHORT).show()
             } else {
-                ServiceManager.Instance.auth.signInAnonymously().addOnSuccessListener(ServiceManager.Instance.createNewUser(name) {
-                    ServiceManager.Instance.setGameState(DrawingActivity())
-                })
+                ServiceManager.Instance.auth.signInAnonymously().addOnSuccessListener(ServiceManager.Instance.createNewUser(name))
             }
         }
     }
@@ -49,12 +47,13 @@ class NameCreationActivity : AppCompatActivity(), State {
 
     override fun enter() {
         ServiceManager.Instance.initializeComponents {
-            GameManager.Instance.CurrentState = this
+            GameManager.Instance.currentState = this
+            GameManager.Instance.queuedState = DrawingActivity()
         }
     }
 
     override fun exit(state: State) {
         startActivity(Intent(this, state::class.java));
-        ServiceManager.Instance.resetUserReadyness()
+        ServiceManager.Instance.setUserReadyness(false)
     }
 }

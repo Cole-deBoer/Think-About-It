@@ -37,16 +37,25 @@ class ServiceManager private constructor()
     private lateinit var episodeRef : DatabaseReference;
 
     lateinit var usersRef: DatabaseReference;
+    lateinit var hostRef: DatabaseReference;
     lateinit var promptsRef: DatabaseReference;
-    lateinit var userReadynessTrackerListener: UserReadynessTracker;
+
+    lateinit var GameStateListener: GameStateListener;
+    private lateinit var userReadynessTrackerListener: UserReadynessTracker;
 
     fun initializeComponents(callback: () -> Unit) {
         databaseRef.child("currentEpisode").get().addOnSuccessListener {episode ->
             episodeRef = databaseRef.child("episode_${episode.value}");
             usersRef = episodeRef.child("users");
+            hostRef = episodeRef.child("host");
             promptsRef = episodeRef.child("Prompts");
+
             userReadynessTrackerListener = UserReadynessTracker();
             usersRef.addValueEventListener(userReadynessTrackerListener);
+
+            GameStateListener = GameStateListener();
+            episodeRef.child("gameState").addValueEventListener(GameStateListener);
+
             callback()
         }.addOnFailureListener {
             Log.e("Connection Error", "Couldn't get the current episode")
@@ -141,11 +150,11 @@ class ServiceManager private constructor()
         }
     }
 
-    fun resetUserReadyness() {
+    fun setUserReadyness(value : Boolean) {
         usersRef.child(auth.currentUser?.uid.toString()).get().addOnFailureListener {
             Log.e("Connection Error", "Couldn't get the user id")
         }.addOnSuccessListener { snapshot ->
-            snapshot.ref.child("ready").setValue(false)
+            snapshot.ref.child("ready").setValue(value)
         }
     }
 
@@ -155,7 +164,7 @@ class ServiceManager private constructor()
         }
     }
 
-    fun createNewUser(name: String, callback: () -> Unit): OnSuccessListener<in AuthResult> {
+    fun createNewUser(name: String): OnSuccessListener<in AuthResult> {
         return OnSuccessListener {
             episodeRef.child("host").get().addOnFailureListener {
                 Log.e("Connection Error", "Couldn't get the host")
@@ -166,7 +175,6 @@ class ServiceManager private constructor()
                 }
                 usersRef.child(auth.currentUser?.uid.toString()).child("name").setValue(name)
                 usersRef.child(auth.currentUser?.uid.toString()).child("ready").setValue(true)
-                callback()
             }
         }
     }
@@ -174,25 +182,19 @@ class ServiceManager private constructor()
 
 class UserReadynessTracker : ValueEventListener {
 
-    lateinit var snapshot : DataSnapshot
+    private lateinit var snapshot : DataSnapshot
 
     override fun onDataChange(snapshot: DataSnapshot) {
         this.snapshot = snapshot
-        val activity = GameManager.Instance.CurrentState as AppCompatActivity
-        Toast.makeText(activity, "User Count: ${snapshot.childrenCount}", Toast.LENGTH_SHORT).show()
-        ServiceManager.Instance.getGameState { state ->
-
-            ServiceManager.Instance.getUserCount { count ->
-                if(count >= GameManager.Instance.AmountOfPlayers)
-                {
-                    if(ServiceManager.Instance.auth.currentUser?.uid == snapshot.child("host").value.toString())
-                    {
-                        if(ServiceManager.Instance.userReadynessTrackerListener.areReady())
-                        {
-                            Toast.makeText(activity, "All users are ready", Toast.LENGTH_SHORT).show()
-                        }
+        ServiceManager.Instance.getUserCount { count ->
+            if (count != GameManager.Instance.amountOfPlayers) return@getUserCount
+            ServiceManager.Instance.hostRef.get().addOnSuccessListener { snapshot ->
+                if (snapshot.value != ServiceManager.Instance.auth.currentUser?.uid) return@addOnSuccessListener
+                areReady { isReady ->
+                    if (!isReady) return@areReady
+                    GameManager.Instance.queuedState?.let { state ->
+                        ServiceManager.Instance.setGameState(state)
                     }
-                    GameManager.Instance.CurrentState?.exit(state)
                 }
             }
         }
@@ -202,11 +204,16 @@ class UserReadynessTracker : ValueEventListener {
         TODO("Not yet implemented")
     }
 
-    fun areReady() : Boolean {
+    private fun areReady(callback : (isReady: Boolean)-> Unit) {
+        var allUsersReady = true;
         for(user in snapshot.children)
         {
-            if(!user.child("ready").value.toString().toBoolean()) return false
+            if(!user.child("ready").value.toString().toBoolean())
+            {
+                allUsersReady = false;
+                break;
+            }
         }
-        return true
+        callback(allUsersReady)
     }
 }

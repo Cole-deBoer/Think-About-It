@@ -24,6 +24,8 @@ class DrawingActivity : AppCompatActivity(), State {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_drawing)
 
+        enter()
+
         // Disable going back
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
 
@@ -107,10 +109,12 @@ class DrawingActivity : AppCompatActivity(), State {
     }
 
     override fun enter() {
-        TODO("Not yet implemented")
+        GameManager.Instance.currentState = this
+        GameManager.Instance.queuedState = VotingActivity()
     }
 
     override fun exit(state: State) {
-        TODO("Not yet implemented")
+        startActivity(Intent(this, state::class.java));
+        ServiceManager.Instance.setUserReadyness(false)
     }
 }

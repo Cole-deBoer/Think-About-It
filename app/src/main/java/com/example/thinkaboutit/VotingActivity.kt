@@ -67,10 +67,12 @@ class VotingActivity : AppCompatActivity(), State {
     }
 
     override fun enter() {
-        TODO("Not yet implemented")
+        GameManager.Instance.currentState = this
+        GameManager.Instance.queuedState = LeaderboardActivity()
     }
 
     override fun exit(state: State) {
-        TODO("Not yet implemented")
+        startActivity(Intent(this, state::class.java))
+        ServiceManager.Instance.setUserReadyness(false)
     }
 }
