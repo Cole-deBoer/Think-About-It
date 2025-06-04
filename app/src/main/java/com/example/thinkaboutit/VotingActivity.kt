@@ -28,9 +28,20 @@ class VotingActivity : AppCompatActivity(), State {
 
     private fun vote(uid: String): View.OnClickListener {
         return View.OnClickListener {
-
-            ServiceManager.Instance.usersRef.child(uid).child("votes").setValue(1)
-            ServiceManager.Instance.setUserReadyness(true);
+            // check that we arent ready when we vote, this ensures we don't vote twice
+            ServiceManager.Instance.usersRef.child(ServiceManager.Instance.auth.currentUser?.uid.toString()).get().addOnSuccessListener { userSnapshot ->
+                if(userSnapshot.child("ready").value.toString().toBoolean()) return@addOnSuccessListener
+                ServiceManager.Instance.usersRef.child(uid).child("votes").get().addOnSuccessListener { snapshot ->
+                    if(snapshot.value == null)
+                    {
+                        snapshot.ref.setValue(1)
+                        return@addOnSuccessListener
+                    }
+                    val currentValue = snapshot.value.toString().toInt()
+                   snapshot.ref.setValue(currentValue + 1)
+                }
+                ServiceManager.Instance.setUserReadyness(true);
+            }
         }
     }
 

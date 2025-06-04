@@ -19,20 +19,10 @@ class LeaderboardActivity : AppCompatActivity(), State {
         // Disable going back
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
 
-        ServiceManager.Instance.auth.currentUser?.let { user ->
-
-            ServiceManager.Instance.getUserImage(user.uid) { image ->
-                // Set up winning drawing
-                val winningDrawing = findViewById<ImageView>(R.id.winning_drawing)
-                winningDrawing.setImageBitmap(image)
-            }
-
-
-            // Set up play again button
-            val playAgainButton = findViewById<Button>(R.id.play_again_button)
-            playAgainButton.setOnClickListener {
-                ServiceManager.Instance.setUserReadyness(true)
-            }
+        // Set up play again button
+        val playAgainButton = findViewById<Button>(R.id.play_again_button)
+        playAgainButton.setOnClickListener {
+            ServiceManager.Instance.setUserReadyness(true)
         }
     }
     // Disable back button
@@ -52,7 +42,7 @@ class LeaderboardActivity : AppCompatActivity(), State {
             for(user in snapshot.children)
             {
                 if(user.child("votes").value == null) continue
-                if(user.child("votes").value.toString().toInt() > highestVotes)
+                if(user.child("votes").value.toString().toInt() >= highestVotes)
                 {
                     highestVotes = user.child("votes").value.toString().toInt()
                     winnersId = user.key.toString()
