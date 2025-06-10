@@ -96,11 +96,6 @@ class ServiceManager private constructor()
                 {
                     Toast.makeText(context, "Image Upload Failed", Toast.LENGTH_SHORT).show()
                 }
-            }.addOnSuccessListener {
-                if(context != null)
-                {
-                    Toast.makeText(context, "Image Uploaded", Toast.LENGTH_SHORT).show()
-                }
             }
         }
     }

@@ -6,15 +6,15 @@ import com.google.firebase.database.ValueEventListener
 
 // singleton class used to keep track of the game state and to pass relevant data
 // between activities
-class GameManager()
+class GameManager
 {
     companion object {
-        val Instance by lazy { GameManager() };
+        val Instance by lazy { GameManager() }
     }
 
     val amountOfPlayers: Int = 2
-    var currentState: State? = null;
-    var queuedState: State? = null;
+    var currentState: State? = null
+    var queuedState: State? = null
 }
 
 class GameStateListener : ValueEventListener
@@ -22,7 +22,7 @@ class GameStateListener : ValueEventListener
     override fun onDataChange(snapshot: DataSnapshot) {
         if(snapshot.value != null)
         {
-            syncToServerGameState();
+            syncToServerGameState()
         }
     }
 
@@ -30,7 +30,7 @@ class GameStateListener : ValueEventListener
         TODO("Not yet implemented")
     }
 
-    fun syncToServerGameState() {
+    private fun syncToServerGameState() {
         ServiceManager.Instance.getGameState { state ->
             GameManager.Instance.currentState?.exit(state)
         }

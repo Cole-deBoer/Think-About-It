@@ -127,7 +127,6 @@ class DrawingView(context: Context, attrs: AttributeSet) : View(context, attrs) 
             canvasBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
             fos.close()
 
-            Toast.makeText(context, "Drawing saved!", Toast.LENGTH_SHORT).show()
             return imageFile.absolutePath
         } catch (e: Exception) {
             e.printStackTrace()
