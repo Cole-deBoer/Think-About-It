@@ -1,0 +1,41 @@
+<!-- res/layout/dialog_image_expanded.xml -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/dialog_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#80000000">
+
+    <!-- Blurred background can be implemented with a library, but for now, use a semi-transparent overlay -->
+
+    <LinearLayout
+        android:id="@+id/dialog_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="32dp"
+        android:background="@drawable/rounded_button"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/expanded_image"
+            android:layout_width="300dp"
+            android:layout_height="300dp"
+            android:layout_gravity="center"
+            android:background="#fff"
+            android:scaleType="fitCenter" />
+
+        <!-- Add more info if needed -->
+
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/close_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="top|end"
+        android:layout_margin="24dp"
+        android:background="@android:color/transparent"
+        android:src="@android:drawable/ic_menu_close_clear_cancel"
+        android:contentDescription="Close"/>
+</FrameLayout>

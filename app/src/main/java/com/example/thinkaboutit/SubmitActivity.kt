@@ -1,5 +1,6 @@
 package com.example.thinkaboutit
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -9,7 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
-class SubmitActivity : AppCompatActivity() {
+class SubmitActivity : AppCompatActivity(), State {
 
     private lateinit var drawingPreview: ImageView
     private lateinit var submitButton: Button
@@ -21,6 +22,8 @@ class SubmitActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_submit)
+
+        enter();
 
         // Disable going back
         supportActionBar?.setDisplayHomeAsUpEnabled(false)
@@ -45,26 +48,34 @@ class SubmitActivity : AppCompatActivity() {
 
         // Set up submit button
         submitButton.setOnClickListener {
-            // Here you would implement the actual submission logic
-            // For example, uploading the image to a server
 
-            Toast.makeText(this, "Drawing submitted successfully!", Toast.LENGTH_SHORT).show()
-            
-            // Navigate to VotingActivity
-            val intent = Intent(this, VotingActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            startActivity(intent)
-            finish()
+            ServiceManager.Instance.setUserReadyness(true)
         }
 
         // Set up cancel button
         cancelButton.setOnClickListener {
+            ServiceManager.Instance.setUserReadyness(false)
             finish()
         }
     }
 
     // Disable back button
+    @SuppressLint("MissingSuperCall")
     override fun onBackPressed() {
         // Do nothing
+        Toast.makeText(this, "You can't go back!", Toast.LENGTH_SHORT).show()
     }
+
+    override fun enter() {
+        GameManager.Instance.currentState = this
+        GameManager.Instance.queuedState = VotingActivity()
+    }
+
+    override fun exit(state: State) {
+        startActivity(Intent(this, state::class.java));
+        ServiceManager.Instance.setUserReadyness(false)
+    }
+
+    override val timeLimit: Long
+        get() = TODO("Not yet implemented")
 }

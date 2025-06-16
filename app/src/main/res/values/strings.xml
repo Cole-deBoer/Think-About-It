@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">ThinkAboutIt</string>
+    <string name="BucketLocation">gs://thinkaboutit-f2133.firebasestorage.app</string>
 </resources>
