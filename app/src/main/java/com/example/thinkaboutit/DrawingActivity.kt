@@ -7,8 +7,12 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.SeekBar
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 
 class DrawingActivity : AppCompatActivity(), State {
 
@@ -18,7 +22,9 @@ class DrawingActivity : AppCompatActivity(), State {
     private lateinit var newBtn: ImageButton
     private lateinit var submitBtn: Button
     private lateinit var brushSize: SeekBar
+    private lateinit var promptText: TextView
     private var userName: String = ""
+    private lateinit var promptListener: ValueEventListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,6 +45,7 @@ class DrawingActivity : AppCompatActivity(), State {
         newBtn = findViewById(R.id.new_btn)
         submitBtn = findViewById(R.id.submit_btn)
         brushSize = findViewById(R.id.brush_size)
+        promptText = findViewById(R.id.prompt_text)
 
         // Set current paint to black by default
         currPaint.setImageDrawable(resources.getDrawable(R.drawable.selected_color, theme))
@@ -117,6 +124,19 @@ class DrawingActivity : AppCompatActivity(), State {
         GameManager.Instance.currentState = this
         GameManager.Instance.queuedState = VotingActivity()
 
+        // Set up prompt listener
+        promptListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val prompt = snapshot.value?.toString() ?: "Loading prompt..."
+                promptText.text = prompt
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                promptText.text = "Error loading prompt"
+            }
+        }
+        ServiceManager.Instance.episodeRef.child("prompt").addValueEventListener(promptListener)
+
         GameTimerManager.Instance.startTimer(timeLimit) {
             Toast.makeText(this, "Time's up!", Toast.LENGTH_SHORT).show()
             ServiceManager.Instance.setGameState(GameManager.Instance.queuedState as State)
@@ -124,7 +144,9 @@ class DrawingActivity : AppCompatActivity(), State {
     }
 
     override fun exit(state: State) {
-        startActivity(Intent(this, state::class.java));
+        // Remove the prompt listener
+        ServiceManager.Instance.episodeRef.child("prompt").removeEventListener(promptListener)
+        startActivity(Intent(this, state::class.java))
         ServiceManager.Instance.setUserReadyness(false)
     }
 

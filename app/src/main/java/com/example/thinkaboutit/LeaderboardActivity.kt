@@ -151,7 +151,7 @@ class LeaderboardActivity : AppCompatActivity(), State, OnUserImageClick {
         ServiceManager.Instance.setUserReadyness(false)
     }
 
-    override val timeLimit: Long get() = 4
+    override val timeLimit: Long get() = 15
 }
 
 data class User (val uid: String, val name: String, val votes: Int, val image: Bitmap? = null)

@@ -45,9 +45,9 @@ class ServiceManager private constructor()
     fun initializeComponents(callback: () -> Unit) {
         databaseRef.child("currentEpisode").get().addOnSuccessListener {episode ->
             episodeRef = databaseRef.child("episode_${episode.value}");
+            promptsRef = databaseRef.child("prompts")
             usersRef = episodeRef.child("users");
             hostRef = episodeRef.child("host");
-            promptsRef = episodeRef.child("Prompts");
 
             // Remove any accidental null user
             usersRef.child("null").removeValue()
@@ -139,8 +139,26 @@ class ServiceManager private constructor()
                 episodeRef.child("gameState").get().addOnFailureListener {
                     Log.e("Connection Error", "Couldn't get the game state creating a new one")
                     episodeRef.child("gameState").setValue(state.javaClass.simpleName)
+                    // Set prompt if state is DrawingActivity
+                    if (state is DrawingActivity) {
+                        setPrompt {
+                            // After prompt is set, get the game state again to trigger the state change
+                            getGameState { newState ->
+                                GameManager.Instance.currentState?.exit(newState)
+                            }
+                        }
+                    }
                 }.addOnSuccessListener { snapshot ->
                     snapshot.ref.setValue(state.javaClass.simpleName)
+                    // Set prompt if state is DrawingActivity
+                    if (state is DrawingActivity) {
+                        setPrompt {
+                            // After prompt is set, get the game state again to trigger the state change
+                            getGameState { newState ->
+                                GameManager.Instance.currentState?.exit(newState)
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -210,13 +228,16 @@ class ServiceManager private constructor()
         }
     }
 
-    fun setPrompt() {
+    fun setPrompt(callback: (() -> Unit)? = null) {
         checkIsHost {
             if(!it) return@checkIsHost
             promptsRef.get().addOnSuccessListener { snapshot ->
                 // get random prompt in the list of prompts
-                val promptIndex = (0..snapshot.childrenCount).random()
+                val promptIndex = (0..<snapshot.childrenCount).random()
                 episodeRef.child("prompt").setValue(snapshot.child(promptIndex.toString()).value.toString())
+                    .addOnSuccessListener {
+                        callback?.invoke()
+                    }
             }
         }
     }
