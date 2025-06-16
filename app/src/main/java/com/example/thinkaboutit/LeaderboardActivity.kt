@@ -12,11 +12,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import android.app.Dialog
-import android.view.Window
-import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.LinearLayout
-import java.io.Serializable
 
 class LeaderboardActivity : AppCompatActivity(), State, OnUserImageClick {
 

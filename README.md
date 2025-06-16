@@ -2,6 +2,15 @@
 
 Think-About-It is an innovative Android game where players create and share their artistic interpretations of various conspiracy theories. The game combines creativity, social interaction, and friendly competition in a unique drawing-based experience.
 
+## 🎮 Game Overview
+
+Think-About-It is a multiplayer drawing game where players:
+1. Receive a conspiracy theory prompt
+2. Create their artistic interpretation within a time limit
+3. Vote on other players' drawings
+4. Earn points based on votes received
+5. Compete for the top spot on the leaderboard
+
 ## 🎨 Features
 
 - **Interactive Drawing Canvas**: Create detailed drawings with customizable brush sizes and colors
@@ -35,6 +44,8 @@ Think-About-It is an innovative Android game where players create and share thei
   - AndroidX Core
   - Material Design Components
   - ConstraintLayout
+  - Kotlin Coroutines for async operations
+  - ViewModel and LiveData for UI state management
 
 ## 🚀 Getting Started
 
@@ -46,6 +57,15 @@ Think-About-It is an innovative Android game where players create and share thei
 - Firebase account
 
 ### Installation
+
+#### Download latest release
+
+1. Go to the [Releases](https://github.com/yourusername/Think-About-It/releases) page
+2. Download the latest APK file
+3. Enable "Install from Unknown Sources" in your Android settings
+4. Install the APK
+
+#### Manually Through Android Studio:
 
 1. Clone the repository:
    ```bash
@@ -62,25 +82,80 @@ Think-About-It is an innovative Android game where players create and share thei
 
 4. Build and run the project
 
+## 🎯 Game Rules
+
+1. **Drawing Phase**:
+   - Players receive a conspiracy theory prompt
+   - 2-minute time limit to create your drawing
+   - Use various brush sizes and colors
+   - Save your drawing when done
+
+2. **Voting Phase**:
+   - View all players' drawings anonymously
+   - Vote for your favorite interpretations
+   - Each player gets 3 votes
+   - Cannot vote for your own drawing
+
+3. **Scoring**:
+   - Points awarded based on votes received
+   - Bonus points for creative interpretations
+   - Weekly and all-time leaderboards
+
 ## 👥 Collaborators
 
-[Placeholder for collaborator 1]
-*Role: [To be filled]*
+Cole - https://github.com/Cole-deBoer
 
-[Placeholder for collaborator 2]
-*Role: [To be filled]*
+Reid - https://github.com/PG27Reid
 
-[Placeholder for collaborator 3]
-*Role: [To be filled]*
+Simone - https://github.com/PG27Simone
+
+Jason - https://github.com/PG27Jason
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how you can help:
+
+1. **Bug Reports**:
+   - Use the GitHub Issues section
+   - Include steps to reproduce
+   - Add screenshots if applicable
+   - Specify your device and Android version
+
+2. **Feature Requests**:
+   - Create a new issue with the "enhancement" label
+   - Describe the feature in detail
+   - Explain its benefits to the game
+
+3. **Code Contributions**:
+   - Fork the repository
+   - Create a feature branch
+   - Follow our coding style
+   - Write tests for new features
+   - Submit a pull request
+
+4. **Documentation**:
+   - Improve existing documentation
+   - Add comments to complex code
+   - Update README with new features
 
 ## 📝 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 🤝 Contributing
+## 🔄 Version History
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+- **v0.1.0-alpha.1** (Current)
+  - Initial pre-release
+  - Basic drawing functionality
+  - Firebase integration
+  - Multiplayer support
+  - Voting system
 
-## 📧 Contact
+## 🔜 Roadmap
 
-[Your contact information here]
+- [ ] Additional conspiracy theory prompts
+- [ ] Enhanced drawing tools
+- [ ] Social media sharing
+- [ ] Custom game rooms
+- [ ] Achievement system
+- [ ] Daily challenges
