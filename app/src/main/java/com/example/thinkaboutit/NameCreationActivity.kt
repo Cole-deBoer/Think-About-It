@@ -36,6 +36,7 @@ class NameCreationActivity : AppCompatActivity(), State {
                 Toast.makeText(this, "Please enter your name", Toast.LENGTH_SHORT).show()
             } else {
                 ServiceManager.Instance.auth.signInAnonymously().addOnSuccessListener(ServiceManager.Instance.createNewUser(name))
+                startActivity(Intent(this, LoadingActivity::class.java))
             }
         }
     }

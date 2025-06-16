@@ -1,10 +1,13 @@
 package com.example.thinkaboutit
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.ktx.auth
@@ -145,6 +148,17 @@ class ServiceManager private constructor()
             Log.e("Connection Error", "Couldn't get the user id")
         }.addOnSuccessListener { snapshot ->
             snapshot.ref.child("ready").setValue(value)
+            if (value) {
+                // Show loading screen when user is ready
+                val currentActivity = GameManager.Instance.currentState
+                if (currentActivity !is LoadingActivity) {
+                    val intent = Intent(currentActivity as? AppCompatActivity, LoadingActivity::class.java)
+                    currentActivity?.let { activity ->
+                        (activity as? AppCompatActivity)?.startActivity(intent)
+
+                    }
+                }
+            }
         }
     }
 

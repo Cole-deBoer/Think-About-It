@@ -12,6 +12,7 @@ data object StateTable {
         "DrawingActivity" to DrawingActivity(),
         "LeaderboardActivity" to LeaderboardActivity(),
         "SubmitActivity" to SubmitActivity(),
-        "VotingActivity" to VotingActivity()
+        "VotingActivity" to VotingActivity(),
+        "LoadingActivity" to LoadingActivity()
     );
 }
