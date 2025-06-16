@@ -92,6 +92,11 @@ class LeaderboardActivity : AppCompatActivity(), State, OnUserImageClick {
         GameManager.Instance.currentState = this
         GameManager.Instance.queuedState = DrawingActivity()
 
+        // Add timer fragment
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.timer_container, TimerFragment.newInstance(timeLimit.toInt()))
+            .commit()
+
         GameTimerManager.Instance.startTimer(timeLimit) {
             Toast.makeText(this, "Time's up!", Toast.LENGTH_SHORT).show()
             ServiceManager.Instance.clearEpisode()

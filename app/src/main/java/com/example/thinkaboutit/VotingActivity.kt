@@ -53,6 +53,11 @@ class VotingActivity : AppCompatActivity(), State {
         GameManager.Instance.currentState = this
         GameManager.Instance.queuedState = LeaderboardActivity()
 
+        // Add timer fragment
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.timer_container, TimerFragment.newInstance(timeLimit.toInt()))
+            .commit()
+
         ServiceManager.Instance.usersRef.get().addOnSuccessListener { usersSnapshot ->
 
             for(user in usersSnapshot.children)

@@ -80,6 +80,11 @@ class DrawingActivity : AppCompatActivity(), State {
             submitIntent.putExtra("USER_NAME", userName)
             startActivity(submitIntent)
         }
+
+        // Add timer fragment
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.timer_container, TimerFragment.newInstance(timeLimit.toInt()))
+            .commit()
     }
 
     // Method to handle color selection

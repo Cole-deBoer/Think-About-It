@@ -31,8 +31,12 @@ class GameStateListener : ValueEventListener
     }
 
     private fun syncToServerGameState() {
-        ServiceManager.Instance.getGameState { state ->
-            GameManager.Instance.currentState?.exit(state)
+        ServiceManager.Instance.isCurrentUserInSession { inSession ->
+            if (inSession) {
+                ServiceManager.Instance.getGameState { state ->
+                    GameManager.Instance.currentState?.exit(state)
+                }
+            }
         }
     }
 }

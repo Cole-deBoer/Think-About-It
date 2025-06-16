@@ -1,10 +1,12 @@
 package com.example.thinkaboutit
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.ktx.auth
@@ -30,7 +32,7 @@ class ServiceManager private constructor()
     private val databaseRef = database.reference;
     private val storageRef = storage.reference;
 
-    private lateinit var episodeRef : DatabaseReference;
+    lateinit var episodeRef : DatabaseReference;
 
     lateinit var usersRef: DatabaseReference;
     lateinit var hostRef: DatabaseReference;
@@ -45,6 +47,9 @@ class ServiceManager private constructor()
             usersRef = episodeRef.child("users");
             hostRef = episodeRef.child("host");
             promptsRef = episodeRef.child("Prompts");
+
+            // Remove any accidental null user
+            usersRef.child("null").removeValue()
 
             userReadynessTrackerListener = UserReadynessTracker();
             usersRef.addValueEventListener(userReadynessTrackerListener);
@@ -141,10 +146,22 @@ class ServiceManager private constructor()
     }
 
     fun setUserReadyness(value : Boolean) {
-        usersRef.child(auth.currentUser?.uid.toString()).get().addOnFailureListener {
+        val uid = auth.currentUser?.uid
+        if (uid == null) return // Don't write if not authenticated
+        usersRef.child(uid).get().addOnFailureListener {
             Log.e("Connection Error", "Couldn't get the user id")
         }.addOnSuccessListener { snapshot ->
             snapshot.ref.child("ready").setValue(value)
+            if (value) {
+                // Show loading screen when user is ready
+                val currentActivity = GameManager.Instance.currentState
+                if (currentActivity !is LoadingActivity) {
+                    val intent = Intent(currentActivity as? AppCompatActivity, LoadingActivity::class.java)
+                    currentActivity?.let { activity ->
+                        (activity as AppCompatActivity).startActivity(intent)
+                    }
+                }
+            }
         }
     }
 
@@ -163,16 +180,31 @@ class ServiceManager private constructor()
         }
     }
 
-    fun createNewUser(name: String): OnSuccessListener<in AuthResult> {
+    fun isSessionFull(callback: (Boolean) -> Unit) {
+        usersRef?.get()?.addOnSuccessListener { snapshot ->
+            val count = snapshot.children.count { it.key != null && it.key != "null" }
+            callback(count >= GameManager.Instance.amountOfPlayers)
+        }
+    }
+
+    fun createNewUser(name: String, onFull: (() -> Unit)? = null): OnSuccessListener<in AuthResult> {
         return OnSuccessListener {
-            episodeRef.child("host").get().addOnFailureListener {
-                Log.e("Connection Error", "Couldn't get the host")
-            }.addOnSuccessListener { snapshot ->
-                if (snapshot.value == null) {
-                    snapshot.ref.setValue(auth.currentUser?.uid.toString())
+            val uid = auth.currentUser?.uid
+            if (uid == null) return@OnSuccessListener
+            isSessionFull { full ->
+                if (full) {
+                    onFull?.invoke()
+                    return@isSessionFull
                 }
-                usersRef.child(auth.currentUser?.uid.toString()).child("name").setValue(name)
-                usersRef.child(auth.currentUser?.uid.toString()).child("ready").setValue(true)
+                episodeRef.child("host").get().addOnFailureListener {
+                    Log.e("Connection Error", "Couldn't get the host")
+                }.addOnSuccessListener { snapshot ->
+                    if (snapshot.value == null) {
+                        snapshot.ref.setValue(uid)
+                    }
+                    usersRef.child(uid).child("name").setValue(name)
+                    usersRef.child(uid).child("ready").setValue(true)
+                }
             }
         }
     }
@@ -203,6 +235,19 @@ class ServiceManager private constructor()
             hostRef.removeValue()
             promptsRef.removeValue()
             setGameState(NameCreationActivity())
+        }
+    }
+
+    fun getCurrentGameStateName(callback: (String) -> Unit) {
+        episodeRef.child("gameState").get().addOnSuccessListener { snapshot ->
+            callback(snapshot.value?.toString() ?: "Unknown")
+        }
+    }
+
+    fun isCurrentUserInSession(callback: (Boolean) -> Unit) {
+        val uid = auth.currentUser?.uid ?: return callback(false)
+        usersRef.child(uid).get().addOnSuccessListener { snapshot ->
+            callback(snapshot.exists())
         }
     }
 }

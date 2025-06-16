@@ -35,7 +35,17 @@ class NameCreationActivity : AppCompatActivity(), State {
             if (name.isEmpty()) {
                 Toast.makeText(this, "Please enter your name", Toast.LENGTH_SHORT).show()
             } else {
-                ServiceManager.Instance.auth.signInAnonymously().addOnSuccessListener(ServiceManager.Instance.createNewUser(name))
+                ServiceManager.Instance.isSessionFull { full ->
+                    if (full) {
+                        // Show loading screen for full session
+                        val intent = Intent(this, SessionFullLoadingActivity::class.java)
+                        startActivity(intent)
+                        return@isSessionFull
+                    }
+                    ServiceManager.Instance.auth.signInAnonymously().addOnSuccessListener(
+                        ServiceManager.Instance.createNewUser(name)
+                    )
+                }
             }
         }
     }

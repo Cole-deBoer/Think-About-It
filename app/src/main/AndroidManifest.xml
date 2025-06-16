@@ -33,6 +33,8 @@
         <activity
             android:name=".LeaderboardActivity"
             android:exported="false" />
+        <activity android:name=".LoadingActivity" />
+        <activity android:name=".SessionFullLoadingActivity" />
     </application>
 
 </manifest>

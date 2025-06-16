@@ -21,7 +21,6 @@ class UserReadynessTracker : ValueEventListener {
                     if (!isReady) return@areReady
                     GameManager.Instance.queuedState?.let { state ->
                         ServiceManager.Instance.setGameState(state)
-                        GameTimerManager.Instance.cancelTimer();
                     }
                 }
             }
@@ -36,10 +35,13 @@ class UserReadynessTracker : ValueEventListener {
         var allUsersReady = true;
         for(user in snapshot.children)
         {
-            if(!user.child("ready").value.toString().toBoolean())
+            if(user != null && user.child("name").value != null)
             {
-                allUsersReady = false;
-                break;
+                if(!user.child("ready").value.toString().toBoolean())
+                {
+                    allUsersReady = false;
+                    break;
+                }
             }
         }
         callback(allUsersReady)
