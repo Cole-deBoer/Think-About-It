@@ -60,7 +60,7 @@ Think-About-It is a multiplayer drawing game where players:
 
 #### Download latest release
 
-1. Go to the [Releases](https://github.com/yourusername/Think-About-It/releases) page
+1. Go to the [Releases](https://github.com/Cole-deBoer/Think-About-It/releases) page
 2. Download the latest APK file
 3. Enable "Install from Unknown Sources" in your Android settings
 4. Install the APK
