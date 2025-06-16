@@ -3,20 +3,13 @@ package com.example.thinkaboutit
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
-import android.text.Layout
-import android.text.Layout.Builder
 import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.constraintlayout.widget.ConstraintSet
-import com.google.firebase.database.values
-import kotlinx.coroutines.flow.first
 
 class VotingActivity : AppCompatActivity(), State {
 
@@ -83,7 +76,14 @@ class VotingActivity : AppCompatActivity(), State {
     override fun exit(state: State) {
         startActivity(Intent(this, state::class.java))
         ServiceManager.Instance.setUserReadyness(false)
+
+        GameTimerManager.Instance.startTimer(timeLimit) {
+            Toast.makeText(this, "Time's up!", Toast.LENGTH_SHORT).show()
+            ServiceManager.Instance.setGameState(GameManager.Instance.queuedState as State)
+        }
     }
+
+    override val timeLimit: Long get() = 10
 }
 
 data class VoteCard(

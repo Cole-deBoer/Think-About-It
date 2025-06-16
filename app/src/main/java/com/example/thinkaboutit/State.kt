@@ -3,6 +3,7 @@ package com.example.thinkaboutit
 interface State {
     fun enter()
     fun exit(state: State)
+    val timeLimit : Long
 }
 
 data object StateTable {

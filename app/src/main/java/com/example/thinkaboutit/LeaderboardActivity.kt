@@ -16,6 +16,7 @@ import android.view.Window
 import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import java.io.Serializable
 
 class LeaderboardActivity : AppCompatActivity(), State, OnUserImageClick {
 
@@ -91,6 +92,12 @@ class LeaderboardActivity : AppCompatActivity(), State, OnUserImageClick {
         GameManager.Instance.currentState = this
         GameManager.Instance.queuedState = DrawingActivity()
 
+        GameTimerManager.Instance.startTimer(timeLimit) {
+            Toast.makeText(this, "Time's up!", Toast.LENGTH_SHORT).show()
+            ServiceManager.Instance.clearEpisode()
+            exit(NameCreationActivity())
+        }
+
         val winnerText = findViewById<TextView>(R.id.winner_text)
         val winnerImageView = findViewById<ImageView>(R.id.winning_drawing)
 
@@ -119,11 +126,11 @@ class LeaderboardActivity : AppCompatActivity(), State, OnUserImageClick {
                     loaded++
                     if (loaded == total) {
                         users.sortByDescending { it.votes }
-                        leaderboardAdapter.notifyDataSetChanged()
+                        leaderboardAdapter.notifyItemInserted(index)
 
                         // Set winner's drawing and text
                         if (users.isNotEmpty()) {
-                            winnerText.text = "The Winner is ${users[0].name}!"
+                            winnerText.text = "The Winner is ${users[0].name}!";
                             winnerImage = users[0].image
                             winnerImageView.setImageBitmap(users[0].image)
                         }
@@ -133,10 +140,13 @@ class LeaderboardActivity : AppCompatActivity(), State, OnUserImageClick {
         }
     }
 
+
     override fun exit(state: State) {
         startActivity(Intent(this, state::class.java));
         ServiceManager.Instance.setUserReadyness(false)
     }
+
+    override val timeLimit: Long get() = 4
 }
 
 data class User (val uid: String, val name: String, val votes: Int, val image: Bitmap? = null)

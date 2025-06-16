@@ -111,10 +111,17 @@ class DrawingActivity : AppCompatActivity(), State {
     override fun enter() {
         GameManager.Instance.currentState = this
         GameManager.Instance.queuedState = VotingActivity()
+
+        GameTimerManager.Instance.startTimer(timeLimit) {
+            Toast.makeText(this, "Time's up!", Toast.LENGTH_SHORT).show()
+            ServiceManager.Instance.setGameState(GameManager.Instance.queuedState as State)
+        }
     }
 
     override fun exit(state: State) {
         startActivity(Intent(this, state::class.java));
         ServiceManager.Instance.setUserReadyness(false)
     }
+
+    override val timeLimit: Long get() = 60
 }

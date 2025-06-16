@@ -8,10 +8,7 @@ import android.widget.Toast
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.auth.AuthResult
 import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.ktx.app
@@ -116,7 +113,6 @@ class ServiceManager private constructor()
                     if(state != null)
                     {
                         callback(state)
-
                     }
                     else
                     {
@@ -152,6 +148,15 @@ class ServiceManager private constructor()
         }
     }
 
+    fun checkIsHost(callback: (Boolean) -> Unit) {
+        episodeRef.child("host").get().addOnFailureListener {
+            Log.e("Connection Error", "Couldn't get the host")
+        }.addOnSuccessListener {
+            callback(it.value.toString() == auth.currentUser?.uid)
+        }
+    }
+
+
     fun getUserCount (callback: (Int) -> Unit) {
         usersRef.get().addOnSuccessListener { snapshot ->
             callback(snapshot.childrenCount.toInt())
@@ -163,8 +168,7 @@ class ServiceManager private constructor()
             episodeRef.child("host").get().addOnFailureListener {
                 Log.e("Connection Error", "Couldn't get the host")
             }.addOnSuccessListener { snapshot ->
-                if(snapshot.value == null)
-                {
+                if (snapshot.value == null) {
                     snapshot.ref.setValue(auth.currentUser?.uid.toString())
                 }
                 usersRef.child(auth.currentUser?.uid.toString()).child("name").setValue(name)
@@ -172,42 +176,33 @@ class ServiceManager private constructor()
             }
         }
     }
-}
 
-class UserReadynessTracker : ValueEventListener {
-
-    private lateinit var snapshot : DataSnapshot
-
-    override fun onDataChange(snapshot: DataSnapshot) {
-        this.snapshot = snapshot
-        ServiceManager.Instance.getUserCount { count ->
-            if (count != GameManager.Instance.amountOfPlayers) return@getUserCount
-            ServiceManager.Instance.hostRef.get().addOnSuccessListener { snapshot ->
-                if (snapshot.value != ServiceManager.Instance.auth.currentUser?.uid) return@addOnSuccessListener
-                areReady { isReady ->
-                    if (!isReady) return@areReady
-                    GameManager.Instance.queuedState?.let { state ->
-                        ServiceManager.Instance.setGameState(state)
-                    }
-                }
+    fun setPrompt() {
+        checkIsHost {
+            if(!it) return@checkIsHost
+            promptsRef.get().addOnSuccessListener { snapshot ->
+                // get random prompt in the list of prompts
+                val promptIndex = (0..snapshot.childrenCount).random()
+                episodeRef.child("prompt").setValue(snapshot.child(promptIndex.toString()).value.toString())
             }
         }
     }
 
-    override fun onCancelled(error: DatabaseError) {
-        TODO("Not yet implemented")
+    fun getPrompt(callback: (String) -> Unit) {
+        episodeRef.child("prompt").get().addOnSuccessListener {
+            callback(it.value.toString())
+        }
     }
 
-    private fun areReady(callback : (isReady: Boolean)-> Unit) {
-        var allUsersReady = true;
-        for(user in snapshot.children)
-        {
-            if(!user.child("ready").value.toString().toBoolean())
-            {
-                allUsersReady = false;
-                break;
-            }
+    fun clearEpisode() {
+        checkIsHost {
+            if (!it) return@checkIsHost
+
+            episodeRef.removeValue()
+            usersRef.removeValue()
+            hostRef.removeValue()
+            promptsRef.removeValue()
+            setGameState(NameCreationActivity())
         }
-        callback(allUsersReady)
     }
 }

@@ -75,4 +75,7 @@ class SubmitActivity : AppCompatActivity(), State {
         startActivity(Intent(this, state::class.java));
         ServiceManager.Instance.setUserReadyness(false)
     }
+
+    override val timeLimit: Long
+        get() = TODO("Not yet implemented")
 }

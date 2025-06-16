@@ -7,6 +7,8 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import java.util.Timer
+import java.util.TimerTask
 
 class NameCreationActivity : AppCompatActivity(), State {
 
@@ -56,4 +58,6 @@ class NameCreationActivity : AppCompatActivity(), State {
         startActivity(Intent(this, state::class.java));
         ServiceManager.Instance.setUserReadyness(false)
     }
+
+    override val timeLimit: Long get() = 3
 }
