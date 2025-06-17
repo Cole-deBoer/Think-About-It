@@ -13,6 +13,7 @@ class SessionFullLoadingActivity : AppCompatActivity() {
     private lateinit var queueStatusText: TextView
     private lateinit var gameStateListener: ValueEventListener
     private lateinit var queueListener: ValueEventListener
+    private lateinit var episodeListener: ValueEventListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,6 +21,24 @@ class SessionFullLoadingActivity : AppCompatActivity() {
 
         stateText = findViewById(R.id.session_full_state_text)
 
+        // Listen for currentEpisode changes (for non-hosts)
+        episodeListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                // When currentEpisode changes, re-initialize and go to NameCreationActivity
+                ServiceManager.Instance.checkIsHost { isHost ->
+                    if (!isHost) {
+                        ServiceManager.Instance.initializeComponents {
+                            val intent = Intent(this@SessionFullLoadingActivity, NameCreationActivity::class.java)
+                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                            startActivity(intent)
+                            finish()
+                        }
+                    }
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        }
+        ServiceManager.Instance.database.reference.child("currentEpisode").addValueEventListener(episodeListener)
 
         // Use a ValueEventListener to update the state text live
         gameStateListener = object : ValueEventListener {
@@ -43,5 +62,6 @@ class SessionFullLoadingActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         ServiceManager.Instance.episodeRef.child("gameState").removeEventListener(gameStateListener)
+        ServiceManager.Instance.database.reference.child("currentEpisode").removeEventListener(episodeListener)
     }
 } 

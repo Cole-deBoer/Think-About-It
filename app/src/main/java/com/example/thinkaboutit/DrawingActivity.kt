@@ -139,13 +139,23 @@ class DrawingActivity : AppCompatActivity(), State {
 
         GameTimerManager.Instance.startTimer(timeLimit) {
             Toast.makeText(this, "Time's up!", Toast.LENGTH_SHORT).show()
-            ServiceManager.Instance.setGameState(GameManager.Instance.queuedState as State)
+            ServiceManager.Instance.checkIsHost { isHost ->
+                if (isHost) {
+                    ServiceManager.Instance.setGameState(GameManager.Instance.queuedState as State)
+                } else {
+                    val intent = Intent(this, SessionFullLoadingActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                    finish()
+                }
+            }
         }
     }
 
     override fun exit(state: State) {
         // Remove the prompt listener
         ServiceManager.Instance.episodeRef.child("prompt").removeEventListener(promptListener)
+        GameTimerManager.Instance.cancelTimer()
         startActivity(Intent(this, state::class.java))
         ServiceManager.Instance.setUserReadyness(false)
     }

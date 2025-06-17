@@ -1,43 +1,54 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="72dp"
+    android:layout_height="88dp"
     android:orientation="horizontal"
     android:gravity="center_vertical"
     android:background="@drawable/leaderboard_item_bg"
-    android:layout_marginBottom="8dp"
-    android:padding="8dp">
+    android:layout_marginBottom="14dp"
+    android:padding="18dp"
+    android:elevation="6dp">
 
     <TextView
         android:id="@+id/user_rank"
-        android:layout_width="32dp"
+        android:layout_width="44dp"
         android:layout_height="wrap_content"
         android:textStyle="bold"
-        android:textSize="18sp"
-        android:gravity="center"/>
+        android:textSize="22sp"
+        android:textColor="#222"
+        android:gravity="center"
+        android:fontFamily="@font/montserratbold"/>
 
-    <ImageView
-        android:id="@+id/user_image"
-        android:layout_width="56dp"
-        android:layout_height="56dp"
-        android:layout_marginEnd="12dp"
-        android:background="#ccc"
-        android:scaleType="fitCenter"/>
+    <FrameLayout
+        android:layout_width="68dp"
+        android:layout_height="68dp"
+        android:background="@drawable/rounded_card_bg">
+        <ImageView
+            android:id="@+id/user_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="#CCCCCC"
+            android:scaleType="fitCenter"
+            android:elevation="2dp"/>
+    </FrameLayout>
 
     <TextView
         android:id="@+id/user_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textSize="18sp"
+        android:textSize="20sp"
         android:textStyle="bold"
-        android:textColor="#222"/>
+        android:textColor="#222"
+        android:fontFamily="@font/montserratbold"/>
 
     <TextView
         android:id="@+id/user_votes"
-        android:layout_width="40dp"
+        android:layout_width="54dp"
         android:layout_height="wrap_content"
-        android:textSize="16sp"
+        android:textSize="20sp"
         android:textStyle="bold"
         android:gravity="end"
-        android:textColor="#222"/>
+        android:textColor="#222"
+        android:fontFamily="@font/montserratbold"/>
+
 </LinearLayout>

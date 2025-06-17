@@ -12,14 +12,21 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import android.app.Dialog
+import android.view.Window
+import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import java.io.Serializable
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 
 class LeaderboardActivity : AppCompatActivity(), State, OnUserImageClick {
 
     private lateinit var leaderboardAdapter: LeaderboardAdapter
     private val users = mutableListOf<User>()
     private var winnerImage: Bitmap? = null
+    private lateinit var promptListener: ValueEventListener
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -27,6 +34,7 @@ class LeaderboardActivity : AppCompatActivity(), State, OnUserImageClick {
 
         val winnerText = findViewById<TextView>(R.id.winner_text)
         val winnerImageView = findViewById<ImageView>(R.id.winning_drawing)
+        val promptText = findViewById<TextView>(R.id.prompt_text)
 
         // Setup RecyclerView
         val recyclerView = findViewById<RecyclerView>(R.id.leaderboard_recycler_view)
@@ -94,10 +102,30 @@ class LeaderboardActivity : AppCompatActivity(), State, OnUserImageClick {
             .replace(R.id.timer_container, TimerFragment.newInstance(timeLimit.toInt()))
             .commit()
 
+        // Listen for prompt updates from Firebase
+        val promptText = findViewById<TextView>(R.id.prompt_text)
+        promptListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val prompt = snapshot.value?.toString() ?: "Prompt"
+                promptText.text = prompt
+            }
+            override fun onCancelled(error: DatabaseError) {
+                promptText.text = "Error loading prompt"
+            }
+        }
+        ServiceManager.Instance.episodeRef.child("prompt").addValueEventListener(promptListener)
+
         GameTimerManager.Instance.startTimer(timeLimit) {
             Toast.makeText(this, "Time's up!", Toast.LENGTH_SHORT).show()
-            ServiceManager.Instance.clearEpisode()
-            exit(NameCreationActivity())
+            ServiceManager.Instance.checkIsHost { isHost ->
+                if (isHost) {
+                    ServiceManager.Instance.clearEpisode()
+                }
+                val intent = Intent(this, SessionFullLoadingActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
         }
 
         val winnerText = findViewById<TextView>(R.id.winner_text)
@@ -144,6 +172,9 @@ class LeaderboardActivity : AppCompatActivity(), State, OnUserImageClick {
 
 
     override fun exit(state: State) {
+        // Remove the prompt listener when exiting
+        ServiceManager.Instance.episodeRef.child("prompt").removeEventListener(promptListener)
+        GameTimerManager.Instance.cancelTimer()
         startActivity(Intent(this, state::class.java));
         ServiceManager.Instance.setUserReadyness(false)
     }

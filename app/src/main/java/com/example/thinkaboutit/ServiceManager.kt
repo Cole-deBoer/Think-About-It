@@ -134,8 +134,7 @@ class ServiceManager private constructor()
         episodeRef.child("host").get().addOnFailureListener {
             Log.e("Connection Error", "Couldn't get the host")
         }.addOnSuccessListener { snapshot ->
-            if(auth.currentUser?.uid == snapshot.value.toString())
-            {
+            if(auth.currentUser?.uid == snapshot.value?.toString()) {
                 episodeRef.child("gameState").get().addOnFailureListener {
                     Log.e("Connection Error", "Couldn't get the game state creating a new one")
                     episodeRef.child("gameState").setValue(state.javaClass.simpleName)
@@ -160,6 +159,8 @@ class ServiceManager private constructor()
                         }
                     }
                 }
+            } else {
+                Log.w("GameState", "Non-host user attempted to set game state!")
             }
         }
     }
@@ -209,7 +210,14 @@ class ServiceManager private constructor()
     fun createNewUser(name: String, onFull: (() -> Unit)? = null): OnSuccessListener<in AuthResult> {
         return OnSuccessListener {
             val uid = auth.currentUser?.uid
-            if (uid == null) return@OnSuccessListener
+            if (uid == null) {
+                Log.e("User Creation", "No UID found for new user!")
+                return@OnSuccessListener
+            }
+            if (name.isBlank()) {
+                Log.e("User Creation", "Attempted to create user with blank name!")
+                return@OnSuccessListener
+            }
             isSessionFull { full ->
                 if (full) {
                     onFull?.invoke()
@@ -219,6 +227,7 @@ class ServiceManager private constructor()
                     Log.e("Connection Error", "Couldn't get the host")
                 }.addOnSuccessListener { snapshot ->
                     if (snapshot.value == null) {
+                        // Set the first user as host
                         snapshot.ref.setValue(uid)
                     }
                     usersRef.child(uid).child("name").setValue(name)
@@ -252,11 +261,28 @@ class ServiceManager private constructor()
         checkIsHost {
             if (!it) return@checkIsHost
 
-            episodeRef.removeValue()
-            usersRef.removeValue()
-            hostRef.removeValue()
-            promptsRef.removeValue()
-            setGameState(NameCreationActivity())
+            // Remove all listeners and clean up references
+            episodeRef.child("gameState").removeEventListener(GameStateListener)
+            usersRef.removeEventListener(userReadynessTrackerListener)
+            
+            // Reset GameManager state
+            GameManager.Instance.reset()
+            
+            // Clear all references to the old episode
+            episodeRef = databaseRef.child("episode_0") // Temporary reference
+            usersRef = episodeRef.child("users")
+            hostRef = episodeRef.child("host")
+
+            // Increment current episode number
+            databaseRef.child("currentEpisode").get().addOnSuccessListener { snapshot ->
+                val currentEpisode = snapshot.value.toString().toInt()
+                databaseRef.child("currentEpisode").setValue(currentEpisode + 1)
+                
+                // Force all users to transition to NameCreationActivity
+                val intent = Intent(GameManager.Instance.currentState as? AppCompatActivity, NameCreationActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                (GameManager.Instance.currentState as? AppCompatActivity)?.startActivity(intent)
+            }
         }
     }
 
