@@ -45,6 +45,7 @@ class NameCreationActivity : AppCompatActivity(), State {
                     ServiceManager.Instance.auth.signInAnonymously().addOnSuccessListener(
                         ServiceManager.Instance.createNewUser(name)
                     )
+                    startActivity(Intent(this, LoadingActivity::class.java))
                 }
             }
         }

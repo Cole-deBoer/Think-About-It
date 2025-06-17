@@ -15,12 +15,17 @@ class GameManager
     val amountOfPlayers: Int = 2
     var currentState: State? = null
     var queuedState: State? = null
+
+    fun reset() {
+        currentState = null
+        queuedState = null
+    }
 }
 
 class GameStateListener : ValueEventListener
 {
     override fun onDataChange(snapshot: DataSnapshot) {
-        if(snapshot.value != null)
+        if(snapshot.value != null && GameManager.Instance.currentState != null)
         {
             syncToServerGameState()
         }
@@ -32,7 +37,7 @@ class GameStateListener : ValueEventListener
 
     private fun syncToServerGameState() {
         ServiceManager.Instance.isCurrentUserInSession { inSession ->
-            if (inSession) {
+            if (inSession && GameManager.Instance.currentState != null) {
                 ServiceManager.Instance.getGameState { state ->
                     GameManager.Instance.currentState?.exit(state)
                 }

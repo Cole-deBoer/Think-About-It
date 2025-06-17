@@ -81,11 +81,7 @@ class VotingActivity : AppCompatActivity(), State {
     override fun exit(state: State) {
         startActivity(Intent(this, state::class.java))
         ServiceManager.Instance.setUserReadyness(false)
-
-        GameTimerManager.Instance.startTimer(timeLimit) {
-            Toast.makeText(this, "Time's up!", Toast.LENGTH_SHORT).show()
-            ServiceManager.Instance.setGameState(GameManager.Instance.queuedState as State)
-        }
+        GameTimerManager.Instance.cancelTimer()
     }
 
     override val timeLimit: Long get() = 10

@@ -48,8 +48,24 @@ class SubmitActivity : AppCompatActivity(), State {
 
         // Set up submit button
         submitButton.setOnClickListener {
-
-            ServiceManager.Instance.setUserReadyness(true)
+            if (drawingPath == null) {
+                Toast.makeText(this, "No drawing to submit!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val bitmap = BitmapFactory.decodeFile(drawingPath)
+            if (bitmap == null) {
+                Toast.makeText(this, "Failed to load drawing!", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            ServiceManager.Instance.sendUserImage(bitmap, this)
+            // Only set readiness after upload success
+            ServiceManager.Instance.getUserImage(ServiceManager.Instance.auth.currentUser?.uid ?: "") { uploadedBitmap ->
+                if (uploadedBitmap != null) {
+                    ServiceManager.Instance.setUserReadyness(true)
+                } else {
+                    Toast.makeText(this, "Image upload failed!", Toast.LENGTH_SHORT).show()
+                }
+            }
         }
 
         // Set up cancel button

@@ -117,8 +117,15 @@ class LeaderboardActivity : AppCompatActivity(), State, OnUserImageClick {
 
         GameTimerManager.Instance.startTimer(timeLimit) {
             Toast.makeText(this, "Time's up!", Toast.LENGTH_SHORT).show()
-            ServiceManager.Instance.clearEpisode()
-            exit(NameCreationActivity())
+            ServiceManager.Instance.checkIsHost { isHost ->
+                if (isHost) {
+                    ServiceManager.Instance.clearEpisode()
+                }
+                val intent = Intent(this, SessionFullLoadingActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
+                finish()
+            }
         }
 
         val winnerText = findViewById<TextView>(R.id.winner_text)
@@ -167,6 +174,7 @@ class LeaderboardActivity : AppCompatActivity(), State, OnUserImageClick {
     override fun exit(state: State) {
         // Remove the prompt listener when exiting
         ServiceManager.Instance.episodeRef.child("prompt").removeEventListener(promptListener)
+        GameTimerManager.Instance.cancelTimer()
         startActivity(Intent(this, state::class.java));
         ServiceManager.Instance.setUserReadyness(false)
     }
