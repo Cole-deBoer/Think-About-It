@@ -22,17 +22,13 @@ Think-About-It is a multiplayer drawing game where players:
 
 ## 📱 Screenshots
 
-[Placeholder for main menu screenshot]
-*Main menu where players enter their name to start the game*
+![naming](https://github.com/user-attachments/assets/2fdb893b-01e0-45fb-aae8-720ffc143a46)
 
-[Placeholder for drawing screen screenshot]
-*Drawing interface with color palette and brush size controls*
+![Drawing](https://github.com/user-attachments/assets/fe6d0443-e366-449f-b845-0a94d0bce7b8)
 
-[Placeholder for voting screen screenshot]
-*Voting screen where players can view and vote on other players' drawings*
+![Voting](https://github.com/user-attachments/assets/3c16e29d-24ad-486d-99cf-5dbea9015c47)
 
-[Placeholder for leaderboard screenshot]
-*Leaderboard showing the winning drawing and final scores*
+![Leaderboard](https://github.com/user-attachments/assets/509ae850-a9f4-43c3-9b8d-c18df0d2019d)
 
 ## 🛠️ Technical Stack
 
@@ -157,5 +153,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - [ ] Enhanced drawing tools
 - [ ] Social media sharing
 - [ ] Custom game rooms
-- [ ] Achievement system
-- [ ] Daily challenges
